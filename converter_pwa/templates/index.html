@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конвертер единиц - PWA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📱 Конвертер единиц</h1>
+            <p class="subtitle">PWA-приложение • Работает оффлайн</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <div class="form-group">
+                    <label for="category">Величина:</label>
+                    <select id="category" class="form-control">
+                        {% for category in categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="fromUnit">Из:</label>
+                    <select id="fromUnit" class="form-control"></select>
+                    <input type="number" id="inputValue" class="form-control" value="1.0" step="any">
+                </div>
+
+                <div class="swap-btn-container">
+                    <button id="swapBtn" class="btn-swap">⇄ Поменять местами</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="toUnit">В:</label>
+                    <select id="toUnit" class="form-control"></select>
+                    <div id="result" class="result-box">0</div>
+                </div>
+
+                <button id="convertBtn" class="btn-primary">Конвертировать</button>
+                <button id="clearBtn" class="btn-secondary">Очистить</button>
+            </div>
+
+            <div class="card info-card">
+                <h3>💡 Как установить на телефон:</h3>
+                <p><strong>Android:</strong> Меню браузера → "Установить приложение"</p>
+                <p><strong>iPhone:</strong> Поделиться → "На экран «Домой»"</p>
+                <p>Работает без интернета после установки!</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>PWA версия десктопного конвертера</p>
+            <button id="installBtn" class="btn-install">⬇ Установить приложение</button>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    
+    <!-- Service Worker для PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js')
+                .then(() => console.log('Service Worker зарегистрирован'))
+                .catch(err => console.log('Ошибка:', err));
+        }
+        
+        // Установка PWA
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+        
+        installBtn.addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    deferredPrompt = null;
+                    installBtn.style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
